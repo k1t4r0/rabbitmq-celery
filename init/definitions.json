@@ -1,0 +1,101 @@
+{
+    "rabbit_version": "3.12.0",
+    "users": [
+        {
+            "name": "Admin",
+            "password": "admin",
+            "tags": "administrator"
+        }
+    ],
+    "vhosts": [
+        {
+            "name": "/"
+        }
+    ],
+    "permissions": [
+        {
+            "user": "Admin",
+            "vhost": "/",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        }
+    ],
+    "queues": [
+        {
+            "name": "stg_start_queue.fifo",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic",
+                "x-max-priority": 10,
+                "x-dead-letter-exchange": "dlx_exchange",
+                "x-dead-letter-routing-key": "stg_start_queue.fifo",
+                "x-message-ttl": 86400000
+            }
+        },
+        {
+            "name": "stg_end_queue.fifo",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic",
+                "x-max-priority": 10,
+                "x-dead-letter-exchange": "dlx_exchange",
+                "x-dead-letter-routing-key": "stg_end_queue.fifo",
+                "x-message-ttl": 86400000
+            }
+        },
+        {
+            "name": "stg_start_queue_dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic",
+                "x-queue-mode": "lazy"
+            }
+        },
+        {
+            "name": "stg_end_queue_dlq",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-queue-type": "classic",
+                "x-queue-mode": "lazy"
+            }
+        }
+    ],
+    "exchanges": [
+        {
+            "name": "dlx_exchange",
+            "vhost": "/",
+            "type": "direct",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        }
+    ],
+    "bindings": [
+        {
+            "source": "dlx_exchange",
+            "vhost": "/",
+            "destination": "stg_start_queue_dlq",
+            "destination_type": "queue",
+            "routing_key": "stg_start_queue.fifo",
+            "arguments": {}
+        },
+        {
+            "source": "dlx_exchange",
+            "vhost": "/",
+            "destination": "stg_end_queue_dlq",
+            "destination_type": "queue",
+            "routing_key": "stg_end_queue.fifo",
+            "arguments": {}
+        }
+    ]
+}
